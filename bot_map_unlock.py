@@ -125,8 +125,16 @@ def save_profile(token, profile, retries=5):
             b64 = compress_data(profile)
             headers = {'User-Agent': USER_AGENT, 'Accept': 'application/json', 'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
             r = requests.post(PROFILE_URL, json={'compressed_data': b64}, headers=headers, timeout=TIMEOUT)
-            if r.status_code == 200:
+            if r.status_code in (200, 201, 204):
                 return True, None
+            # Also try numeric user id if available in profile
+            account_id = profile.get('account_id') or profile.get('id') or profile.get('user_id')
+            if account_id:
+                clean_id = ''.join(c for c in str(account_id) if c.isdigit())
+                if clean_id:
+                    r2 = requests.post(f"{PROFILE_URL}/{clean_id}", json={'compressed_data': b64}, headers=headers, timeout=TIMEOUT)
+                    if r2.status_code in (200, 201, 204):
+                        return True, None
             time.sleep(2)
         except Exception:
             time.sleep(2)

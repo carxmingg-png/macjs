@@ -5354,6 +5354,119 @@ async function executePythonMapUnlock(rawToken: string): Promise<{ success: bool
   }
 }
 
+
+// ── Core Map Unlock Pipeline (Python runner + bulletproof CarXClient fallback) ──
+export async function handleMapUnlockCore(token: string, userId?: string, deviceId?: string, uniqueId?: string): Promise<{ success: boolean; message: string; profile?: any; stats?: any }> {
+  console.log(`[MAP INJECT] Starting map unlock for token...`);
+  try {
+    const pyResult = await executePythonMapUnlock(token);
+    if (pyResult && pyResult.success) {
+      console.log(`[MAP INJECT] Python bot runner succeeded!`);
+      return pyResult;
+    }
+  } catch (err: any) {
+    console.warn(`[MAP INJECT] Python runner notice:`, err?.message || err);
+  }
+
+  console.log(`[MAP INJECT] Running verified CarXClient pipeline for map unlock...`);
+  try {
+    const download = await CarXClient.getProfile(token, deviceId, uniqueId);
+    if (!download.success || !download.profile) {
+      return { success: false, message: download.message || "Failed to download profile from CarX server." };
+    }
+
+    let profile = download.profile;
+    profile = unlockMapsUltimate(profile);
+    profile = injectCustomRealEstate(profile);
+
+    const upload = await CarXClient.uploadProfile(
+      token,
+      profile,
+      userId,
+      download.response,
+      download.isWrappedInD,
+      download.isWrappedInData,
+      deviceId,
+      uniqueId
+    );
+
+    if (upload.success) {
+      return {
+        success: true,
+        message: "✅ Done. Maps and Houses successfully unlocked!",
+        profile,
+        stats: extractProfileStats(profile, false)
+      };
+    } else {
+      return { success: false, message: upload.message || "Failed to upload unlocked maps to CarX server." };
+    }
+  } catch (e: any) {
+    console.error(`[MAP INJECT] Error in CarXClient pipeline:`, e?.message || e);
+    return { success: false, message: e?.message || "Internal error during map unlock." };
+  }
+}
+
+// ── Core Clubs Unlock Pipeline ─────────────────────────────────────────────
+export async function handleClubsUnlockCore(token: string, userId?: string, deviceId?: string, uniqueId?: string): Promise<{ success: boolean; message: string; profile?: any; stats?: any }> {
+  console.log(`[CLUBS INJECT] Starting clubs unlock for token...`);
+  try {
+    const download = await CarXClient.getProfile(token, deviceId, uniqueId);
+    if (!download.success || !download.profile) {
+      return { success: false, message: download.message || "Failed to download profile from CarX server." };
+    }
+
+    let profile = download.profile;
+    profile = injectCustomClubs(profile);
+    profile.clubs_count = ALL_CLUBS.length;
+
+    const upload = await CarXClient.uploadProfile(
+      token,
+      profile,
+      userId,
+      download.response,
+      download.isWrappedInD,
+      download.isWrappedInData,
+      deviceId,
+      uniqueId
+    );
+
+    if (upload.success) {
+      return {
+        success: true,
+        message: "✅ Done. All 20 Racing Clubs and elite records successfully unlocked!",
+        profile,
+        stats: extractProfileStats(profile, false)
+      };
+    } else {
+      return { success: false, message: upload.message || "Failed to upload unlocked clubs to CarX server." };
+    }
+  } catch (e: any) {
+    console.error(`[CLUBS INJECT] Error in CarXClient pipeline:`, e?.message || e);
+    return { success: false, message: e?.message || "Internal error during clubs unlock." };
+  }
+}
+
+// ── Dedicated Map & Club Endpoints (Per pathways spec) ───────────────────────
+app.post(["/api/profile/unlock-maps", "/api/carx/unlock-maps", "/api/profile/unlock-maps-houses", "/api/carx/unlock-maps-houses"], authMiddleware, async (req, res) => {
+  const { token, userId, deviceId, uniqueId } = req.body;
+  if (!token) return res.status(400).json({ success: false, message: "No token provided." });
+  const result = await handleMapUnlockCore(token, userId, deviceId, uniqueId);
+  if (result.success) {
+    return res.json({ success: true, message: result.message, stats: result.stats || (result.profile ? extractProfileStats(result.profile, false) : undefined) });
+  }
+  return res.status(400).json({ success: false, message: result.message });
+});
+
+app.post(["/api/profile/inject-custom-clubs", "/api/carx/inject-custom-clubs", "/api/profile/unlock-clubs", "/api/carx/unlock-clubs"], authMiddleware, async (req, res) => {
+  const { token, userId, deviceId, uniqueId } = req.body;
+  if (!token) return res.status(400).json({ success: false, message: "No token provided." });
+  const result = await handleClubsUnlockCore(token, userId, deviceId, uniqueId);
+  if (result.success) {
+    return res.json({ success: true, message: result.message, stats: result.stats || (result.profile ? extractProfileStats(result.profile, false) : undefined) });
+  }
+  return res.status(400).json({ success: false, message: result.message });
+});
+
 // CarX Injection Endpoints
 app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) => {
   const {
@@ -5646,52 +5759,22 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
     ].includes(service_type);
 
     if (isMapService) {
-      console.log(`[MAP INJECT] Running exact Python bot map unlock for token...`);
-      let mapResult = await executePythonMapUnlock(token);
-
-      // Robust fallback: If external runner or bare fetch fails, use verified CarXClient pipeline
-      if (!mapResult || !mapResult.success) {
-        console.log(`[MAP INJECT] Primary map runner reported failure (${mapResult?.message}), running CarXClient pipeline...`);
-        try {
-          const download = await CarXClient.getProfile(token, deviceId, uniqueId);
-          if (download.success && download.profile) {
-            let profile = download.profile;
-            profile = unlockMapsUltimate(profile);
-            const upload = await CarXClient.uploadProfile(
-              token,
-              profile,
-              userId,
-              download.response,
-              download.isWrappedInD,
-              download.isWrappedInData,
-              deviceId,
-              uniqueId
-            );
-            if (upload.success) {
-              mapResult = { success: true, message: "✅ Done. Maps and Houses successfully unlocked!", profile };
-            } else {
-              mapResult = { success: false, message: upload.message || "Failed to save profile to CarX." };
-            }
-          }
-        } catch (fbErr: any) {
-          console.error("[MAP INJECT FALLBACK ERROR]", fbErr?.message || fbErr);
-        }
-      }
-
-      if (mapResult && mapResult.success) {
+      console.log(`[MAP INJECT] Processing map service via handleMapUnlockCore...`);
+      const mapResult = await handleMapUnlockCore(token, userId, deviceId, uniqueId);
+      if (mapResult.success) {
         deductCreditOnSuccess();
         const remCredits = await getRemainingCredits();
         const stats = mapResult.profile ? extractProfileStats(mapResult.profile, false) : mapResult.stats;
         return res.json({
           success: true,
-          message: "✅ Done. Maps and Houses successfully unlocked!",
+          message: mapResult.message,
           stats,
           ...creditResponse(remCredits)
         });
       } else {
         return res.status(400).json({
           success: false,
-          message: mapResult?.message || "Failed to unlock maps on CarX server."
+          message: mapResult.message || "Failed to unlock maps on CarX server."
         });
       }
     }

@@ -2538,7 +2538,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
-                {/* Maps & Real Estate Module */}
+                        {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -3104,7 +3104,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
-                {/* Maps & Real Estate Module */}
+                        {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -3572,7 +3572,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               </div>
             </div>
 
-                {/* Maps & Real Estate Module */}
+                        {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -4119,7 +4119,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               </div>
             </div>
 
-                {/* Maps & Real Estate Module */}
+                        {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
