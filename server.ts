@@ -1055,6 +1055,12 @@ export function injectCustomRealEstate(profile: any): any {
       profile.real_estates[k] = { is_bought: true };
     }
   }
+  profile.real_estate_slots = profile.real_estate_slots || {};
+  if (custom.real_estate_slots) {
+    for (const [k, v] of Object.entries(custom.real_estate_slots)) {
+      profile.real_estate_slots[k] = { unlocked: true, ...(v as any) };
+    }
+  }
   profile.locations = profile.locations || { default: { location_objects_set: { keys: [] } } };
   profile.locations.default = profile.locations.default || { location_objects_set: { keys: [] } };
   profile.locations.default.location_objects_set = profile.locations.default.location_objects_set || { keys: [] };
@@ -5816,6 +5822,7 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
         successMsg = "✅ Successfully injected Everything (Normal Tier): 98 Cars, All 6 Maps & 52 Real Estate Properties, 20 Racing Clubs, Profile Style, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)! Safe from bans.";
       } else if (service_type === "inject_everything_special") {
         modified = modifyProfile(profile, { inject_custom_fleet: true }, userId);
+        modified = injectCustomRealEstate(modified);
         modified = unlockAllMaps(modified);
         modified = injectCustomVanity(modified);
         modified = injectCustomArmory(modified);
