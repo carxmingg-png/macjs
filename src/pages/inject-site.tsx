@@ -2404,7 +2404,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                     </span>
                   </h3>
                   <p className="text-xs font-chakra text-purple-300/80">
-                    98 Base Cars · 20 Racing Clubs · Profile Style & Cosmetics · Safe Currency (+50K Cash, +5K Gold, 93,060 EXP Lv. 50)
+                    98 Base Cars · All 6 World Maps · 20 Racing Clubs · Profile Style & Cosmetics · Safe Currency (+50K Cash, +5K Gold, 93,060 EXP Lv. 50)
                   </p>
                 </div>
               </div>
@@ -2538,6 +2538,78 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
+        {/* World Maps Module */}
+        <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Map className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
+                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 py-1">
+              <div className="bg-black/60 border border-cyan-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">World Maps</div>
+                <div className="text-base font-black text-cyan-300 font-mono mt-0.5">
+                  {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
+                </div>
+              </div>
+              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
+                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
+                  100% Open
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              data-testid="button-unlock-maps"
+              onClick={() => unlockMapsHouses.mutate({
+                data: {
+                  token: session.token,
+                  userId: session.carxId,
+                  deviceId: session.deviceId,
+                  uniqueId: session.uniqueId,
+                  service_type: "unlock_maps",
+                  unlock_maps: true,
+                  userToken
+                }
+              })}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-black font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              {unlockMapsHouses.isPending ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                </span>
+              ) : (
+                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+              )}
+            </button>
+            {results.mapsHouses && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.mapsHouses.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.mapsHouses.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.mapsHouses.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
             {/* Vehicles Injection */}
         <div className="cyber-card cyber-card-glow-purple rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-purple-500/30">
           <div className="space-y-3.5">
@@ -2868,7 +2940,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                     </span>
                   </h3>
                   <p className="text-xs font-chakra text-amber-300/80">
-                    117 Custom Fleet Cars · 115+ Vanity Vault · 99x Tires & Armory · 20 Clubs · Safe Currency (+50K / +5K / 93,060 EXP)
+                    117 Custom Fleet Cars · All 6 World Maps · 115+ Vanity Vault · 99x Tires & Armory · 20 Clubs · Safe Currency (+50K / +5K / 93,060 EXP)
                   </p>
                 </div>
               </div>
@@ -2982,6 +3054,78 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
+        {/* World Maps Module */}
+        <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Map className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
+                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 py-1">
+              <div className="bg-black/60 border border-cyan-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">World Maps</div>
+                <div className="text-base font-black text-cyan-300 font-mono mt-0.5">
+                  {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
+                </div>
+              </div>
+              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
+                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
+                  100% Open
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              data-testid="button-unlock-maps"
+              onClick={() => unlockMapsHouses.mutate({
+                data: {
+                  token: session.token,
+                  userId: session.carxId,
+                  deviceId: session.deviceId,
+                  uniqueId: session.uniqueId,
+                  service_type: "unlock_maps",
+                  unlock_maps: true,
+                  userToken
+                }
+              })}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-black font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              {unlockMapsHouses.isPending ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                </span>
+              ) : (
+                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+              )}
+            </button>
+            {results.mapsHouses && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.mapsHouses.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.mapsHouses.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.mapsHouses.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
             {/* Custom Fleet Treasury Section */}
         <div className="cyber-card cyber-card-glow-amber rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-amber-500/30">
           <div className="space-y-3.5">
@@ -3220,7 +3364,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                     </span>
                   </h3>
                   <p className="text-xs font-chakra text-rose-300/80">
-                    117 Stage-5 Cars (Engine Swaps/Cells) · 90 Shop Packs · 128 Vanity · 99x Tires & Armory · 20 Clubs · Collectables · Safe Currency
+                    117 Stage-5 Cars · All 6 World Maps · 90 Shop Packs · 128 Vanity · 99x Tires & Armory · 20 Clubs · Collectables · Safe Currency
                   </p>
                 </div>
               </div>
@@ -3327,6 +3471,78 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 )}
               </div>
             </div>
+
+        {/* World Maps Module */}
+        <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Map className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
+                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 py-1">
+              <div className="bg-black/60 border border-cyan-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">World Maps</div>
+                <div className="text-base font-black text-cyan-300 font-mono mt-0.5">
+                  {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
+                </div>
+              </div>
+              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
+                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
+                  100% Open
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              data-testid="button-unlock-maps"
+              onClick={() => unlockMapsHouses.mutate({
+                data: {
+                  token: session.token,
+                  userId: session.carxId,
+                  deviceId: session.deviceId,
+                  uniqueId: session.uniqueId,
+                  service_type: "unlock_maps",
+                  unlock_maps: true,
+                  userToken
+                }
+              })}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-black font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              {unlockMapsHouses.isPending ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                </span>
+              ) : (
+                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+              )}
+            </button>
+            {results.mapsHouses && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.mapsHouses.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.mapsHouses.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.mapsHouses.msg}
+              </div>
+            )}
+          </div>
+        </div>
 
             {/* Extreme Shop Owned Packs */}
             <div className="cyber-card cyber-card-glow-amber rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-amber-500/30">
@@ -3671,7 +3887,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                     </span>
                   </h3>
                   <p className="text-xs font-chakra text-cyan-300/80">
-                    3-Star Freeride Stunts · Infinite Delivery Reset · 100L Fleet Fuel & Nitro · Top 10 Leaderboard · Career Quests · Safe Currency
+                    All 6 World Maps · 3-Star Freeride Stunts · Infinite Delivery Reset · 100L Fleet Fuel & Nitro · Top 10 Leaderboard · Career Quests · Safe Currency
                   </p>
                 </div>
               </div>
@@ -3752,6 +3968,78 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 )}
               </div>
             </div>
+
+        {/* World Maps Module */}
+        <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Map className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
+                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 py-1">
+              <div className="bg-black/60 border border-cyan-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">World Maps</div>
+                <div className="text-base font-black text-cyan-300 font-mono mt-0.5">
+                  {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
+                </div>
+              </div>
+              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
+                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
+                  100% Open
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              data-testid="button-unlock-maps"
+              onClick={() => unlockMapsHouses.mutate({
+                data: {
+                  token: session.token,
+                  userId: session.carxId,
+                  deviceId: session.deviceId,
+                  uniqueId: session.uniqueId,
+                  service_type: "unlock_maps",
+                  unlock_maps: true,
+                  userToken
+                }
+              })}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-400 hover:from-cyan-400 hover:to-teal-300 text-black font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              {unlockMapsHouses.isPending ? (
+                <span className="flex items-center justify-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                </span>
+              ) : (
+                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+              )}
+            </button>
+            {results.mapsHouses && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.mapsHouses.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.mapsHouses.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.mapsHouses.msg}
+              </div>
+            )}
+          </div>
+        </div>
 
             {/* Business Delivery Cooldown Reset */}
             <div className="cyber-card cyber-card-glow-amber rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-amber-500/30">
