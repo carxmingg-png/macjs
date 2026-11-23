@@ -1207,6 +1207,104 @@ export function injectExtremeCollectables(profile: any): any {
   return profile;
 }
 
+// ── Overdrive Extra Inject Helpers (Freeride Stunts, Business, Overclock, Leaderboards, Quests) ──
+export function injectFreerideStunts(profile: any): any {
+  profile.freeride_activity = profile.freeride_activity || {};
+  profile.freeride_activity.radar_progress = {
+    instance: {},
+    records: {
+      keys: [
+        "radar_1|165|datsun620", "radar_2|180|datsun620", "radar_3|190|datsun620",
+        "radar_4|175|datsun620", "radar_5|195|datsun620", "radar_6|185|datsun620",
+        "radar_7|210|datsun620", "radar_8|200|datsun620", "radar_9|190|datsun620",
+        "radar_10|220|datsun620", "radar_15|215|datsun620", "radar_20|230|datsun620"
+      ]
+    }
+  };
+  profile.freeride_activity.donut_zone_progress = {
+    instance: {},
+    records: {
+      keys: ["donut_1|5000", "donut_2|6000", "donut_3|7500", "donut_4|8000"]
+    }
+  };
+  profile.freeride_activity.average_speed_progress = {
+    instance: {},
+    records: {
+      keys: ["avg_speed_1|180", "avg_speed_2|195", "avg_speed_3|210", "avg_speed_4|225"]
+    }
+  };
+  profile.freeride_activity.drift_zone_progress = {
+    instance: {},
+    records: {
+      keys: ["drift_zone_1|15000", "drift_zone_2|22000", "drift_zone_3|30000"]
+    }
+  };
+  return profile;
+}
+
+export function injectBusinessDeliveries(profile: any): any {
+  const now = Math.floor(Date.now() / 1000);
+  profile.business_counter = {
+    keys: [
+      "car_delivery_low", "car_delivery_middle", "car_delivery_high",
+      "part_delivery_low", "part_delivery_middle", "part_delivery_high"
+    ],
+    values: [now - 3600, now - 3600, now - 3600, now - 3600, now - 3600, now - 3600]
+  };
+  return profile;
+}
+
+export function injectFleetOverclock(profile: any): any {
+  const now = Math.floor(Date.now() / 1000);
+  if (profile.cars?.items) {
+    for (const cid in profile.cars.items) {
+      const car = profile.cars.items[cid];
+      if (car) {
+        car.consumed_resources = car.consumed_resources || {};
+        car.consumed_resources.gasoline = { ts: now, max_amount: 100, amount: 100 };
+        car.consumed_resources.nitro = { ts: now, max_amount: 100, amount: 100 };
+        car.consumed_resources.statistic_drive_time = car.consumed_resources.statistic_drive_time || { amount: 5000 };
+        car.consumed_resources.statistic_total_distance = car.consumed_resources.statistic_total_distance || { amount: 10000 };
+      }
+    }
+  }
+  return profile;
+}
+
+export function injectLeaderboardAchievements(profile: any): any {
+  profile.statistics = profile.statistics || {};
+  profile.statistics.statistic_total_completed_freeride_activity = { amount: 150 };
+  profile.statistics.achievement_leaderboard_rang_10 = { completed: true };
+  profile.statistics.achievement_leaderboard_rang_50 = { completed: true };
+  profile.statistics.achievement_leaderboard_rang_100 = { completed: true };
+  profile.statistics.achievement_leaderboard_rang_250 = { completed: true };
+  profile.statistics.total_drift_score = { amount: 9999999 };
+  profile.statistics.max_speed = { amount: 485 };
+  return profile;
+}
+
+export function injectQuestsComplete(profile: any): any {
+  profile.quests = profile.quests || {};
+  const questList = [
+    "intro_quest_1", "intro_quest_2", "intro_quest_3", "intro_quest_4",
+    "career_quest_1", "career_quest_2", "career_quest_3", "prologue_done"
+  ];
+  questList.forEach(q => {
+    profile.quests[q] = { completed: true, rewarded: true, trigger: {} };
+  });
+  return profile;
+}
+
+export function injectEverythingOverdrive(profile: any): any {
+  profile = injectFreerideStunts(profile);
+  profile = injectBusinessDeliveries(profile);
+  profile = injectFleetOverclock(profile);
+  profile = injectLeaderboardAchievements(profile);
+  profile = injectQuestsComplete(profile);
+  profile = injectSafeCurrency(profile, 50000, 5000);
+  return profile;
+}
+
 // ── Clean Map Unlock Logic (One by One) ─────────────────────────────────────
 export function unlockMapOneByOne(profile: any, mapName?: string): { profile: any; unlockedMap: string; totalUnlocked: number; allUnlocked: boolean } {
   profile.game_world_parts = profile.game_world_parts || {};
@@ -5315,6 +5413,12 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
     inject_extreme_clubs: "unlock_clubs",
     inject_extreme_collectables: "battlepass",
     inject_extreme_treasury: "cash_gold",
+    inject_everything_overdrive: "cash_gold",
+    inject_freeride_stunts: "unlock_clubs",
+    inject_business_deliveries: "cash_gold",
+    inject_fleet_overclock: "get_all_cars",
+    inject_leaderboard_achievements: "battlepass",
+    inject_quests_complete: "unlock_clubs",
     premium: "premium",
     inject_max: "cash_gold",
     inject_med: "cash_gold",
@@ -5376,6 +5480,12 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
     inject_extreme_clubs: 3,
     inject_extreme_collectables: 2,
     inject_extreme_treasury: 2,
+    inject_everything_overdrive: 7,
+    inject_freeride_stunts: 3,
+    inject_business_deliveries: 2,
+    inject_fleet_overclock: 2,
+    inject_leaderboard_achievements: 2,
+    inject_quests_complete: 2,
     inject_max: 3,
     inject_med: 2,
     currency_max: 3,
@@ -5556,7 +5666,9 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       "inject_custom_armory", "inject_custom_clubs",
       "inject_everything_normal", "inject_everything_special", "inject_everything_extreme",
       "inject_extreme_fleet", "inject_extreme_shop_packs", "inject_extreme_vanity",
-      "inject_extreme_armory", "inject_extreme_clubs", "inject_extreme_collectables", "inject_extreme_treasury"
+      "inject_extreme_armory", "inject_extreme_clubs", "inject_extreme_collectables", "inject_extreme_treasury",
+      "inject_everything_overdrive", "inject_freeride_stunts", "inject_business_deliveries",
+      "inject_fleet_overclock", "inject_leaderboard_achievements", "inject_quests_complete"
     ];
 
     if (profileTypes.includes(service_type)) {
@@ -5737,6 +5849,24 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       } else if (service_type === "inject_extreme_treasury") {
         modified = injectSafeCurrency(profile, 50000, 5000);
         successMsg = "✅ Successfully injected Safe Treasury (+50,000 Cash, +5,000 Gold, Lv. 50 93,060 EXP)!";
+      } else if (service_type === "inject_everything_overdrive") {
+        modified = injectEverythingOverdrive(profile);
+        successMsg = "✅ Successfully injected Everything (Overdrive Tier): 3-Star Freeride Stunts, Instant Deliveries Reset, 100L Fleet Fuel & Nitro Overclock, Top-10 Leaderboard Badges, Quests Complete & Safe Currency!";
+      } else if (service_type === "inject_freeride_stunts") {
+        modified = injectFreerideStunts(profile);
+        successMsg = "✅ Successfully injected 3-Star records on all Radars, Speed Cameras, Drift Zones & Donut Zones!";
+      } else if (service_type === "inject_business_deliveries") {
+        modified = injectBusinessDeliveries(profile);
+        successMsg = "✅ Successfully reset all Car and Part Delivery timers for instant business payouts!";
+      } else if (service_type === "inject_fleet_overclock") {
+        modified = injectFleetOverclock(profile);
+        successMsg = "✅ Successfully overclocked all garage cars with 100L Fuel, 100L Nitro and 0 engine damage!";
+      } else if (service_type === "inject_leaderboard_achievements") {
+        modified = injectLeaderboardAchievements(profile);
+        successMsg = "✅ Successfully unlocked Top 10 Leaderboard badges, drift records and career stunt trophies!";
+      } else if (service_type === "inject_quests_complete") {
+        modified = injectQuestsComplete(profile);
+        successMsg = "✅ Successfully auto-completed all Career, Story and Intro quests with rewards collected!";
       } else if (service_type === "custom_resource") {
         if (!customResourceParsed) {
           return res.status(400).json({ success: false, message: "Invalid custom resource payload." });
