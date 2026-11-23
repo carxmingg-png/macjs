@@ -1000,17 +1000,50 @@ try {
   console.error("[STARTUP ERROR] Failed to load custom_cars_fleet.json:", e.message);
 }
 
-// ── Custom Fleet Extra Inject Helpers (Treasury, Real Estate, Vanity, Armory, Clubs) ──
-export function injectCustomTreasury(profile: any): any {
+// ── Extreme Profile Database (from extreme_profile.json) ──────────────────────
+export let EXTREME_PROFILE: any = null;
+export let EXTREME_CARS_LIST: any[] = [];
+try {
+  const possibleExtremePaths = [
+    path.join(process.cwd(), "extreme_profile.json"),
+    path.join(__dirname, "extreme_profile.json"),
+    "C:\\Users\\oemadmin\\Downloads\\Telegram Desktop\\carx-profile-2026-11-20-1.json"
+  ];
+  for (const p of possibleExtremePaths) {
+    if (fs.existsSync(p)) {
+      EXTREME_PROFILE = JSON.parse(fs.readFileSync(p, "utf-8"));
+      const items = EXTREME_PROFILE?.cars?.items || {};
+      EXTREME_CARS_LIST = Object.entries(items).map(([id, car]: [string, any]) => ({
+        id,
+        descId: car.__desc_id || id,
+        tuningCells: car.tuning?.cells ? Object.keys(car.tuning.cells).length : 0,
+        vinyls: car.vinyls_slots?.items ? Object.keys(car.vinyls_slots.items).length : 0,
+        bodyKit: car.body_kit?.__desc_id || "Pro/Stock"
+      }));
+      console.log(`[STARTUP] Successfully loaded ${EXTREME_CARS_LIST.length} extreme pro-tuned cars from extreme_profile.json`);
+      break;
+    }
+  }
+} catch (e: any) {
+  console.error("[STARTUP ERROR] Failed to load extreme_profile.json:", e.message);
+}
+
+// ── Safe Currency Inject Helper (Modest safe currency & exactly 93,060 EXP Lv. 50) ──
+export function injectSafeCurrency(profile: any, cashAmount = 50000, goldAmount = 5000): any {
   profile.resources = profile.resources || {};
   profile.resources.soft = profile.resources.soft || { amount: 0 };
-  profile.resources.soft.amount = (Number(profile.resources.soft.amount) || 0) + 59664340;
+  profile.resources.soft.amount = (Number(profile.resources.soft.amount) || 0) + cashAmount;
   profile.resources.hard = profile.resources.hard || { amount: 0 };
-  profile.resources.hard.amount = (Number(profile.resources.hard.amount) || 0) + 14679;
+  profile.resources.hard.amount = (Number(profile.resources.hard.amount) || 0) + goldAmount;
   profile.resources.experience = profile.resources.experience || { amount: 0, award_index: 0 };
-  profile.resources.experience.amount = Math.max(Number(profile.resources.experience.amount) || 0, 96030);
-  profile.resources.experience.award_index = Math.max(Number(profile.resources.experience.award_index) || 0, 49);
+  profile.resources.experience.amount = 93060;
+  profile.resources.experience.award_index = 49;
   return profile;
+}
+
+// ── Custom Fleet Extra Inject Helpers (Treasury, Vanity, Armory, Clubs) ──
+export function injectCustomTreasury(profile: any): any {
+  return injectSafeCurrency(profile, 50000, 5000);
 }
 
 export function injectCustomRealEstate(profile: any): any {
@@ -1090,6 +1123,86 @@ export function injectCustomClubs(profile: any): any {
     for (const [k, v] of Object.entries(custom.clubs)) {
       profile.clubs[k] = profile.clubs[k] || structuredClone(v);
     }
+  }
+  return profile;
+}
+
+// ── Extreme Profile Extra Inject Helpers (Shop Packs, Vanity, Armory, Clubs, Collectables) ──
+export function injectExtremeShopPacks(profile: any): any {
+  const ext = EXTREME_PROFILE;
+  if (!ext) return profile;
+  profile.shop_owned_packs = profile.shop_owned_packs || { keys: [] };
+  const existing = new Set(profile.shop_owned_packs.keys || []);
+  if (ext.shop_owned_packs?.keys) {
+    for (const k of ext.shop_owned_packs.keys) {
+      existing.add(k);
+    }
+  }
+  profile.shop_owned_packs.keys = Array.from(existing);
+  return profile;
+}
+
+export function injectExtremeVanity(profile: any): any {
+  const ext = EXTREME_PROFILE;
+  if (!ext) return profile;
+  profile.battle_pass_event_rewards = profile.battle_pass_event_rewards || { keys: [] };
+  const existing = new Set(profile.battle_pass_event_rewards.keys || []);
+  if (ext.battle_pass_event_rewards?.keys) {
+    for (const k of ext.battle_pass_event_rewards.keys) {
+      existing.add(k);
+    }
+  }
+  profile.battle_pass_event_rewards.keys = Array.from(existing);
+  if (ext.profile) {
+    profile.profile = profile.profile || {};
+    profile.profile.avatar = ext.profile.avatar || profile.profile.avatar || "avatar_18";
+    profile.profile.banner = ext.profile.banner || profile.profile.banner || "banner_18";
+    profile.profile.frame = ext.profile.frame || profile.profile.frame || "frame_18";
+  }
+  return profile;
+}
+
+export function injectExtremeArmory(profile: any): any {
+  const ext = EXTREME_PROFILE;
+  if (!ext) return profile;
+  profile.consumable_wheel_tires = profile.consumable_wheel_tires || { seed: 0, items: {} };
+  profile.consumable_wheel_tires.items = profile.consumable_wheel_tires.items || {};
+  if (ext.consumable_wheel_tires?.items) {
+    for (const [k, v] of Object.entries(ext.consumable_wheel_tires.items)) {
+      profile.consumable_wheel_tires.items[k] = structuredClone(v);
+    }
+  }
+  profile.player_inventory = profile.player_inventory || {};
+  profile.player_inventory.tuning_parts_collection = profile.player_inventory.tuning_parts_collection || { seed: 0, items: {} };
+  profile.player_inventory.tuning_parts_collection.items = profile.player_inventory.tuning_parts_collection.items || {};
+  if (ext.player_inventory?.tuning_parts_collection?.items) {
+    for (const [k, v] of Object.entries(ext.player_inventory.tuning_parts_collection.items)) {
+      profile.player_inventory.tuning_parts_collection.items[k] = structuredClone(v);
+    }
+  }
+  return profile;
+}
+
+export function injectExtremeClubs(profile: any): any {
+  const ext = EXTREME_PROFILE;
+  if (!ext) return profile;
+  profile.clubs = profile.clubs || {};
+  if (ext.clubs) {
+    for (const [k, v] of Object.entries(ext.clubs)) {
+      profile.clubs[k] = profile.clubs[k] || structuredClone(v);
+    }
+  }
+  return profile;
+}
+
+export function injectExtremeCollectables(profile: any): any {
+  const ext = EXTREME_PROFILE;
+  if (!ext) return profile;
+  if (ext.collectables_events) {
+    profile.collectables_events = structuredClone(ext.collectables_events);
+  }
+  if (ext.emoji) {
+    profile.emoji = structuredClone(ext.emoji);
   }
   return profile;
 }
@@ -3438,6 +3551,8 @@ export function modifyProfile(
     safe_repair?: boolean;
     random_cars_count?: number;
     inject_custom_fleet?: boolean;
+    inject_extreme_fleet?: boolean;
+    inject_extreme_car?: string;
   },
   userId?: string,
   email?: string
@@ -3723,6 +3838,7 @@ export function modifyProfile(
 
   let nextCarId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1000;
   const carsToInject: string[] = [];
+  const extremeTemplates: Record<string, any> = {};
 
   if (mods.get_all_cars || (mods.custom_cars_amount && mods.custom_cars_amount >= ALL_CARS_LIST.length)) {
     // Add all cars from ALL_CARS_LIST that are not yet owned, so total becomes ALL_CARS_LIST.length
@@ -3731,6 +3847,31 @@ export function modifyProfile(
       if (BANNED_UNRELEASED_CAR_IDS.has(cleanDesc)) continue;
       if (!existingDescIds.has(cleanDesc)) {
         carsToInject.push(cleanDesc);
+      }
+    }
+  }
+
+  if (mods.inject_extreme_fleet) {
+    const extItems = EXTREME_PROFILE?.cars?.items || {};
+    const allEntries = Object.entries(extItems);
+    const count = mods.random_cars_count && mods.random_cars_count > 0 ? Math.min(mods.random_cars_count, allEntries.length) : allEntries.length;
+    const slice = allEntries.slice(0, count);
+    for (const [_, item] of slice) {
+      const desc = (item as any)?.__desc_id;
+      if (desc && !BANNED_UNRELEASED_CAR_IDS.has(desc)) {
+        carsToInject.push(desc);
+        extremeTemplates[desc] = structuredClone(item);
+      }
+    }
+  }
+
+  if (mods.inject_extreme_car) {
+    const extItems = EXTREME_PROFILE?.cars?.items || {};
+    for (const [_, item] of Object.entries(extItems)) {
+      if ((item as any)?.__desc_id === mods.inject_extreme_car) {
+        carsToInject.push(mods.inject_extreme_car);
+        extremeTemplates[mods.inject_extreme_car] = structuredClone(item);
+        break;
       }
     }
   }
@@ -3779,7 +3920,9 @@ export function modifyProfile(
     nextCarId++;
 
     let carObj: any = null;
-    if (PREMIUM_BUILDS && PREMIUM_BUILDS[descId]) {
+    if (extremeTemplates[descId]) {
+      carObj = structuredClone(extremeTemplates[descId]);
+    } else if (PREMIUM_BUILDS && PREMIUM_BUILDS[descId]) {
       carObj = structuredClone(PREMIUM_BUILDS[descId]);
     } else if (PROFILE_TEMPLATE?.cars?.items) {
       for (const tCid in PROFILE_TEMPLATE.cars.items) {
@@ -4239,6 +4382,23 @@ app.get(["/api/cars/custom", "/cars/custom"], (req, res) => {
   const carsList = Object.entries(items).map(([id, car]: [string, any]) => ({
     id,
     descId: car.__desc_id || id
+  }));
+  res.json({
+    success: true,
+    total: carsList.length,
+    cars: carsList
+  });
+});
+
+// Get extreme pro-tuned fleet cars list
+app.get(["/api/cars/extreme", "/cars/extreme"], (req, res) => {
+  const items = EXTREME_PROFILE?.cars?.items || {};
+  const carsList = Object.entries(items).map(([id, car]: [string, any]) => ({
+    id,
+    descId: car.__desc_id || id,
+    tuningCells: car.tuning?.cells ? Object.keys(car.tuning.cells).length : 0,
+    vinyls: car.vinyls_slots?.items ? Object.keys(car.vinyls_slots.items).length : 0,
+    bodyKit: car.body_kit?.__desc_id || "Stage-5 Pro"
   }));
   res.json({
     success: true,
@@ -5145,6 +5305,16 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
     inject_custom_vanity: "battlepass",
     inject_custom_armory: "cash_gold",
     inject_custom_clubs: "unlock_clubs",
+    inject_everything_normal: "cash_gold",
+    inject_everything_special: "cash_gold",
+    inject_everything_extreme: "cash_gold",
+    inject_extreme_fleet: "get_all_cars",
+    inject_extreme_shop_packs: "battlepass",
+    inject_extreme_vanity: "battlepass",
+    inject_extreme_armory: "cash_gold",
+    inject_extreme_clubs: "unlock_clubs",
+    inject_extreme_collectables: "battlepass",
+    inject_extreme_treasury: "cash_gold",
     premium: "premium",
     inject_max: "cash_gold",
     inject_med: "cash_gold",
@@ -5196,6 +5366,16 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
     inject_custom_vanity: 3,
     inject_custom_armory: 2,
     inject_custom_clubs: 3,
+    inject_everything_normal: 5,
+    inject_everything_special: 6,
+    inject_everything_extreme: 8,
+    inject_extreme_fleet: 4,
+    inject_extreme_shop_packs: 3,
+    inject_extreme_vanity: 3,
+    inject_extreme_armory: 2,
+    inject_extreme_clubs: 3,
+    inject_extreme_collectables: 2,
+    inject_extreme_treasury: 2,
     inject_max: 3,
     inject_med: 2,
     currency_max: 3,
@@ -5373,7 +5553,10 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       "add_cars_all", "add_cars_50", "add_cars_random", "menu_sp", "restore", "menu_restore",
       "inject_custom_fleet", "custom_fleet",
       "inject_custom_treasury", "inject_custom_real_estate", "inject_custom_vanity",
-      "inject_custom_armory", "inject_custom_clubs"
+      "inject_custom_armory", "inject_custom_clubs",
+      "inject_everything_normal", "inject_everything_special", "inject_everything_extreme",
+      "inject_extreme_fleet", "inject_extreme_shop_packs", "inject_extreme_vanity",
+      "inject_extreme_armory", "inject_extreme_clubs", "inject_extreme_collectables", "inject_extreme_treasury"
     ];
 
     if (profileTypes.includes(service_type)) {
@@ -5509,6 +5692,51 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       } else if (service_type === "inject_custom_clubs") {
         modified = injectCustomClubs(profile);
         successMsg = "✅ Successfully unlocked all 20 Racing Clubs and elite records from Custom Fleet!";
+      } else if (service_type === "inject_everything_normal") {
+        modified = modifyProfile(profile, { get_all_cars: true, unlock_clubs: true, unlock_profile_style: true }, userId);
+        modified = injectSafeCurrency(modified, 50000, 5000);
+        successMsg = "✅ Successfully injected Everything (Normal Tier): 98 Cars, 20 Racing Clubs, Profile Style, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)! Safe from bans.";
+      } else if (service_type === "inject_everything_special") {
+        modified = modifyProfile(profile, { inject_custom_fleet: true }, userId);
+        modified = injectCustomVanity(modified);
+        modified = injectCustomArmory(modified);
+        modified = injectCustomClubs(modified);
+        modified = injectSafeCurrency(modified, 50000, 5000);
+        successMsg = "✅ Successfully injected Everything (Special Tier): 117 Custom Cars, 115+ Vanity Vault, 99x Tires & Armory, 20 Clubs, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
+      } else if (service_type === "inject_everything_extreme") {
+        modified = modifyProfile(profile, { inject_extreme_fleet: true }, userId);
+        modified = injectExtremeShopPacks(modified);
+        modified = injectExtremeVanity(modified);
+        modified = injectExtremeArmory(modified);
+        modified = injectExtremeClubs(modified);
+        modified = injectExtremeCollectables(modified);
+        modified = injectSafeCurrency(modified, 50000, 5000);
+        successMsg = "✅ Successfully injected Everything (Extreme Tier): 117 Pro-Tuned Cars (Stage-5/Swaps), 90 Shop Packs, 128 Vanity Rewards, 99x Tires, 29 Tuning Parts, 20 Clubs, Event Collectables & Emojis, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
+      } else if (service_type === "inject_extreme_fleet") {
+        const count = random_cars_count ? parseInt(random_cars_count, 10) : undefined;
+        const initialCount = Object.keys(profile.cars?.items || {}).length;
+        modified = modifyProfile(profile, { inject_extreme_fleet: true, random_cars_count: count }, userId);
+        const finalCount = Object.keys(modified.cars?.items || {}).length;
+        const addedCount = Math.max(0, finalCount - initialCount);
+        successMsg = `✅ Successfully injected ${addedCount} Pro-Tuned Stage-5 cars from Extreme Fleet! Total cars in account: ${finalCount}.`;
+      } else if (service_type === "inject_extreme_shop_packs") {
+        modified = injectExtremeShopPacks(profile);
+        successMsg = "✅ Successfully unlocked all 90 Special Shop Owned Packs!";
+      } else if (service_type === "inject_extreme_vanity") {
+        modified = injectExtremeVanity(profile);
+        successMsg = "✅ Successfully unlocked all 128 Battle Pass & Elite Vanity rewards!";
+      } else if (service_type === "inject_extreme_armory") {
+        modified = injectExtremeArmory(profile);
+        successMsg = "✅ Successfully stocked your Armory with 99x tire sets and 29 tuning inventory collections!";
+      } else if (service_type === "inject_extreme_clubs") {
+        modified = injectExtremeClubs(profile);
+        successMsg = "✅ Successfully unlocked all 20 Racing Clubs and elite boss records!";
+      } else if (service_type === "inject_extreme_collectables") {
+        modified = injectExtremeCollectables(profile);
+        successMsg = "✅ Successfully unlocked Halloween 2026, First Event Collectables, and quick-chat emojis!";
+      } else if (service_type === "inject_extreme_treasury") {
+        modified = injectSafeCurrency(profile, 50000, 5000);
+        successMsg = "✅ Successfully injected Safe Treasury (+50,000 Cash, +5,000 Gold, Lv. 50 93,060 EXP)!";
       } else if (service_type === "custom_resource") {
         if (!customResourceParsed) {
           return res.status(400).json({ success: false, message: "Invalid custom resource payload." });
