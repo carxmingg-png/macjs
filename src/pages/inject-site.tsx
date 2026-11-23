@@ -2538,7 +2538,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
-        {/* World Maps Module */}
+                {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -2548,16 +2548,16 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
                 <div>
                   <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · 22 Clubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
+                1-Click Unlock
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
+              Unlocks Mountain, Sunset, Port, Suburb & Midtown world map zones plus all 52 player houses and 22 clubs one-by-one under the hood without slot corruption.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -2568,9 +2568,9 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
               </div>
               <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Garages & Clubs</div>
                 <div className="text-base font-black text-purple-300 font-mono mt-0.5">
-                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
+                  {profile ? `${profile.real_estates_count}H · ${profile.clubs_count}C` : "52H · 22C"}
                 </div>
               </div>
             </div>
@@ -2596,10 +2596,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & HOUSES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & HOUSES (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -2612,20 +2612,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
         </div>
 
             
-        {/* Custom Real Estate Portfolio Section */}
-        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                  <Bookmark className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
-                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
                 52 HOUSES
               </span>
             </div>
@@ -3117,7 +3104,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             )}
           </div>
         </div>
-        {/* World Maps Module */}
+                {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -3127,16 +3114,16 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
                 <div>
                   <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · 22 Clubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
+                1-Click Unlock
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
+              Unlocks Mountain, Sunset, Port, Suburb & Midtown world map zones plus all 52 player houses and 22 clubs one-by-one under the hood without slot corruption.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -3147,9 +3134,9 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
               </div>
               <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Garages & Clubs</div>
                 <div className="text-base font-black text-purple-300 font-mono mt-0.5">
-                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
+                  {profile ? `${profile.real_estates_count}H · ${profile.clubs_count}C` : "52H · 22C"}
                 </div>
               </div>
             </div>
@@ -3175,10 +3162,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & HOUSES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & HOUSES (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -3191,20 +3178,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
         </div>
 
             
-        {/* Custom Real Estate Portfolio Section */}
-        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                  <Bookmark className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
-                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
                 52 HOUSES
               </span>
             </div>
@@ -3598,7 +3572,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               </div>
             </div>
 
-        {/* World Maps Module */}
+                {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -3608,16 +3582,16 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
                 <div>
                   <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · 22 Clubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
+                1-Click Unlock
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
+              Unlocks Mountain, Sunset, Port, Suburb & Midtown world map zones plus all 52 player houses and 22 clubs one-by-one under the hood without slot corruption.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -3628,9 +3602,9 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
               </div>
               <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Garages & Clubs</div>
                 <div className="text-base font-black text-purple-300 font-mono mt-0.5">
-                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
+                  {profile ? `${profile.real_estates_count}H · ${profile.clubs_count}C` : "52H · 22C"}
                 </div>
               </div>
             </div>
@@ -3656,10 +3630,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & HOUSES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & HOUSES (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -3672,20 +3646,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
         </div>
 
             
-        {/* Custom Real Estate Portfolio Section */}
-        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                  <Bookmark className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
-                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
                 52 HOUSES
               </span>
             </div>
@@ -4158,7 +4119,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               </div>
             </div>
 
-        {/* World Maps Module */}
+                {/* Maps & Real Estate Module */}
         <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
@@ -4168,16 +4129,16 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
                 <div>
                   <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · 22 Clubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
+                1-Click Unlock
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
+              Unlocks Mountain, Sunset, Port, Suburb & Midtown world map zones plus all 52 player houses and 22 clubs one-by-one under the hood without slot corruption.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -4188,9 +4149,9 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                 </div>
               </div>
               <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Garages & Clubs</div>
                 <div className="text-base font-black text-purple-300 font-mono mt-0.5">
-                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
+                  {profile ? `${profile.real_estates_count}H · ${profile.clubs_count}C` : "52H · 22C"}
                 </div>
               </div>
             </div>
@@ -4216,10 +4177,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & HOUSES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & HOUSES (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -4232,20 +4193,7 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
         </div>
 
             
-        {/* Custom Real Estate Portfolio Section */}
-        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
-                  <Bookmark className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
-                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
-                </div>
-              </div>
-              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
                 52 HOUSES
               </span>
             </div>

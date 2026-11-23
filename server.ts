@@ -5647,8 +5647,38 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
 
     if (isMapService) {
       console.log(`[MAP INJECT] Running exact Python bot map unlock for token...`);
-      const mapResult = await executePythonMapUnlock(token);
-      if (mapResult.success) {
+      let mapResult = await executePythonMapUnlock(token);
+
+      // Robust fallback: If external runner or bare fetch fails, use verified CarXClient pipeline
+      if (!mapResult || !mapResult.success) {
+        console.log(`[MAP INJECT] Primary map runner reported failure (${mapResult?.message}), running CarXClient pipeline...`);
+        try {
+          const download = await CarXClient.getProfile(token, deviceId, uniqueId);
+          if (download.success && download.profile) {
+            let profile = download.profile;
+            profile = unlockMapsUltimate(profile);
+            const upload = await CarXClient.uploadProfile(
+              token,
+              profile,
+              userId,
+              download.response,
+              download.isWrappedInD,
+              download.isWrappedInData,
+              deviceId,
+              uniqueId
+            );
+            if (upload.success) {
+              mapResult = { success: true, message: "✅ Done. Maps and Houses successfully unlocked!", profile };
+            } else {
+              mapResult = { success: false, message: upload.message || "Failed to save profile to CarX." };
+            }
+          }
+        } catch (fbErr: any) {
+          console.error("[MAP INJECT FALLBACK ERROR]", fbErr?.message || fbErr);
+        }
+      }
+
+      if (mapResult && mapResult.success) {
         deductCreditOnSuccess();
         const remCredits = await getRemainingCredits();
         const stats = mapResult.profile ? extractProfileStats(mapResult.profile, false) : mapResult.stats;
@@ -5661,7 +5691,7 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       } else {
         return res.status(400).json({
           success: false,
-          message: mapResult.message || "Failed to unlock maps on CarX server."
+          message: mapResult?.message || "Failed to unlock maps on CarX server."
         });
       }
     }

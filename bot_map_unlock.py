@@ -106,8 +106,13 @@ def get_profile(token):
     try:
         r = requests.get(PROFILE_URL, headers=headers, timeout=TIMEOUT)
         if r.status_code == 200:
-            data = r.json()['d']['data']
-            compressed = data['compressed_data']
+            json_data = r.json()
+            data = json_data.get('d', {}).get('data') if isinstance(json_data.get('d'), dict) else json_data.get('data')
+            if not data or not isinstance(data, dict):
+                data = json_data
+            compressed = data.get('compressed_data')
+            if not compressed:
+                return None, "No compressed_data"
             raw = base64.b64decode(compressed)
             return json.loads(gzip.decompress(raw[4:])), None
         return None, f"HTTP {r.status_code}"
