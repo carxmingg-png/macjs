@@ -19,6 +19,8 @@ import {
   useSafeRepair,
   useGetCars,
   getGetCarsQueryKey,
+  useGetCustomCars,
+  getGetCustomCarsQueryKey,
   useCheckBan,
 } from "@/lib/api-client";
 import { CurrencyInputPreset, CarsInjectInputMode } from "@/lib/api-client";
@@ -947,6 +949,11 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
   const [fleetModalOpen, setFleetModalOpen] = useState(false);
   const [fleetSearch, setFleetSearch] = useState("");
 
+  const [customFleetMode, setCustomFleetMode] = useState<string>("all");
+  const [customFleetCarCount, setCustomFleetCarCount] = useState("50");
+  const [customFleetModalOpen, setCustomFleetModalOpen] = useState(false);
+  const [customFleetSearch, setCustomFleetSearch] = useState("");
+
   const deleteAcc = useDeleteCarX({
     mutation: {
       onSuccess: (d) => {
@@ -1215,6 +1222,56 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
     },
   });
 
+  const injectCustomCars = useInjectCars({
+    mutation: {
+      onSuccess: (d: any) => {
+        setResults(r => ({ ...r, customCars: { ok: true, msg: d.message || "Done" } }));
+        if (d.stats) {
+          setProfile(p => p ? ({
+            ...p,
+            cars: d.stats.cars || d.stats.cars_count || p.cars,
+            current_car: d.stats.current_car || p.current_car,
+            current_car_id: d.stats.current_car_id || p.current_car_id,
+            cars_list: d.stats.cars_list || p.cars_list,
+          }) : null);
+        }
+        fetchProfile();
+      },
+      onError: (err) => {
+        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+        setResults(r => ({ ...r, customCars: { ok: false, msg: msg || "Failed" } }));
+      },
+    },
+  });
+
+  const injectCustomPerk = useInjectCars({
+    mutation: {
+      onSuccess: (d: any, vars: any) => {
+        const sType = vars?.data?.service_type || "perk";
+        setResults(r => ({ ...r, [sType]: { ok: true, msg: d.message || "Done" } }));
+        if (d.stats) {
+          setProfile(p => p ? ({
+            ...p,
+            cash: d.stats.cash !== undefined ? d.stats.cash : p.cash,
+            gold: d.stats.gold !== undefined ? d.stats.gold : p.gold,
+            level: d.stats.level !== undefined ? d.stats.level : p.level,
+            exp: d.stats.exp !== undefined ? d.stats.exp : p.exp,
+            cars: d.stats.cars || d.stats.cars_count || p.cars,
+            current_car: d.stats.current_car || p.current_car,
+            current_car_id: d.stats.current_car_id || p.current_car_id,
+            cars_list: d.stats.cars_list || p.cars_list,
+          }) : null);
+        }
+        fetchProfile();
+      },
+      onError: (err, vars: any) => {
+        const sType = vars?.data?.service_type || "perk";
+        const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+        setResults(r => ({ ...r, [sType]: { ok: false, msg: msg || "Failed" } }));
+      },
+    },
+  });
+
   const unlockStreetPass = useUnlockStreetPass({
     mutation: {
       onSuccess: (d) => {
@@ -1396,7 +1453,111 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
 
   const anyPending =
     injectCurrency.isPending || unlockMaps.isPending || unlockClubs.isPending || unlockMapsHouses.isPending ||
-    injectCars.isPending || unlockStreetPass.isPending || unlockProfileStyle.isPending || injectAll.isPending || safeRepair.isPending || checkBan.isPending;
+    injectCars.isPending || injectCustomCars.isPending || injectCustomPerk.isPending || unlockStreetPass.isPending || unlockProfileStyle.isPending || injectAll.isPending || safeRepair.isPending || checkBan.isPending;
+
+  const customCarsQuery = useGetCustomCars({ query: { queryKey: getGetCustomCarsQueryKey(), enabled: true } });
+  const totalCustomCars = customCarsQuery.data?.total || 117;
+  const customCarsFleet = (customCarsQuery.data?.cars || []) as Array<{ id: string; descId: string }>;
+
+  const filteredCustomFleet = customCarsFleet.filter(c =>
+    (c.descId || "").toLowerCase().includes(customFleetSearch.toLowerCase()) ||
+    (c.id || "").toString().includes(customFleetSearch.toLowerCase())
+  );
+
+  const CUSTOM_FLEET_MODES = [
+    { v: "all", l: `All (${totalCustomCars} Cars)`, sub: `All ${totalCustomCars} custom cars` },
+    { v: "first50", l: "First 50", sub: "50 cars" },
+    { v: "random10", l: "Random 10", sub: "10 cars" },
+    { v: "custom", l: "Custom", sub: "Pick count" },
+  ];
+
+  const handleInjectCustomFleet = () => {
+    let countVal = totalCustomCars;
+    if (customFleetMode === "first50") {
+      countVal = 50;
+    } else if (customFleetMode === "random10") {
+      countVal = 10;
+    } else if (customFleetMode === "custom") {
+      countVal = Number(customFleetCarCount) || 10;
+    }
+
+    injectCustomCars.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_fleet",
+        random_cars_count: countVal,
+        userToken
+      }
+    });
+  };
+
+  const handleInjectCustomTreasury = () => {
+    injectCustomPerk.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_treasury",
+        userToken
+      }
+    });
+  };
+
+  const handleInjectCustomRealEstate = () => {
+    injectCustomPerk.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_real_estate",
+        userToken
+      }
+    });
+  };
+
+  const handleInjectCustomVanity = () => {
+    injectCustomPerk.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_vanity",
+        userToken
+      }
+    });
+  };
+
+  const handleInjectCustomArmory = () => {
+    injectCustomPerk.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_armory",
+        userToken
+      }
+    });
+  };
+
+  const handleInjectCustomClubs = () => {
+    injectCustomPerk.mutate({
+      data: {
+        token: session.token,
+        userId: session.carxId,
+        deviceId: session.deviceId,
+        uniqueId: session.uniqueId,
+        service_type: "inject_custom_clubs",
+        userToken
+      }
+    });
+  };
 
   const CURRENCY_PRESETS = [
     { v: "step", l: "Safe Step (+1K)", sub: "+1K Cash / +1K Gold / +100 EXP" },
@@ -1558,6 +1719,78 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               <button
                 onClick={() => setFleetModalOpen(false)}
                 className="text-purple-400 hover:text-purple-300 font-bold uppercase cursor-pointer"
+              >
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {customFleetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="cyber-card rounded-3xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-cyan-500/40 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/80">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏎️</span>
+                <div>
+                  <h3 className="text-sm font-gaming font-bold text-white tracking-wide">
+                    CUSTOM FLEET INSPECTOR ({totalCustomCars} CARS)
+                  </h3>
+                  <p className="text-[11px] font-chakra text-cyan-400">
+                    Dedicated custom car catalog parsed from uploaded fleet build
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setCustomFleetModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 border-b border-zinc-800 bg-black/40">
+              <input
+                type="text"
+                value={customFleetSearch}
+                onChange={(e) => setCustomFleetSearch(e.target.value)}
+                placeholder="Search custom car model or ID..."
+                className="w-full bg-zinc-900 border border-zinc-700/80 rounded-xl px-4 py-2 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-400 font-mono"
+              />
+            </div>
+
+            <div className="p-4 overflow-y-auto flex-1 space-y-2 bg-black/80">
+              {filteredCustomFleet.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500 text-xs font-chakra">
+                  No cars matching search filter
+                </div>
+              ) : (
+                filteredCustomFleet.map((c, idx) => (
+                  <div
+                    key={`custom-${c.id}-${idx}`}
+                    className="flex items-center justify-between p-3 rounded-xl border bg-zinc-900/60 border-zinc-800 hover:border-cyan-500/50 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🏎️</span>
+                      <div>
+                        <span className="font-mono text-xs font-bold text-white uppercase">{c.descId}</span>
+                        <div className="font-mono text-[10px] text-zinc-500">Fleet ID #{c.id}</div>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold uppercase">
+                      CUSTOM BUILD
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="px-6 py-3 border-t border-zinc-800 bg-zinc-900/80 flex items-center justify-between text-[11px] font-chakra text-zinc-500">
+              <span>Showing {filteredCustomFleet.length} of {totalCustomCars} cars</span>
+              <button
+                onClick={() => setCustomFleetModalOpen(false)}
+                className="text-cyan-400 hover:text-cyan-300 font-bold uppercase cursor-pointer"
               >
                 CLOSE
               </button>
@@ -2025,6 +2258,373 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
               <div className={`flex items-center gap-1.5 text-xs font-mono ${results.cars.ok ? "text-emerald-400" : "text-red-400"}`}>
                 {results.cars.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                 {results.cars.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Vehicles Fleet Injection Section */}
+        <div className="cyber-card cyber-card-glow-cyan rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-cyan-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Car className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM FLEET DECK ({totalCustomCars} CARS)</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">Special Extended Fleet · Verified Pro Builds</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCustomFleetModalOpen(true)}
+                className="text-[9px] font-chakra font-bold text-cyan-400 hover:text-cyan-200 underline cursor-pointer uppercase"
+              >
+                Browse Fleet ({totalCustomCars}) →
+              </button>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Injects the dedicated {totalCustomCars}-car custom fleet into your account while keeping all existing cars completely intact.
+            </p>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              {CUSTOM_FLEET_MODES.map(({ v, l, sub }) => (
+                <button
+                  key={v}
+                  onClick={() => setCustomFleetMode(v)}
+                  className={`flex flex-col items-center py-2 px-1 rounded-xl text-center transition-all border cursor-pointer ${
+                    customFleetMode === v
+                      ? "bg-cyan-600 border-cyan-400 text-white font-bold shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                      : "bg-zinc-900/80 border-zinc-800 text-zinc-400 hover:bg-zinc-800"
+                  }`}
+                >
+                  <span className="text-xs font-chakra">{l}</span>
+                  <span className={`text-[9px] font-mono mt-0.5 ${customFleetMode === v ? "text-cyan-200" : "text-zinc-500"}`}>{sub}</span>
+                </button>
+              ))}
+            </div>
+
+            <AnimatePresence>
+              {customFleetMode === "custom" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden pt-1"
+                >
+                  <NumInput
+                    label="Car Count to Inject"
+                    value={customFleetCarCount}
+                    onChange={setCustomFleetCarCount}
+                    min={1}
+                    max={totalCustomCars}
+                    placeholder="50"
+                    icon="🏎️"
+                    accent="text-cyan-300"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              data-testid="button-inject-custom-fleet"
+              onClick={handleInjectCustomFleet}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-cyan-500 hover:from-cyan-500 hover:to-teal-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(6,182,212,0.25)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] cursor-pointer"
+            >
+              {injectCustomCars.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> INJECTING VEHICLES...</span>
+              ) : customFleetMode === "all" ? `🚗 INJECT ALL ${totalCustomCars} CARS TO GARAGE` : "🚗 INJECT CUSTOM CARS TO GARAGE"}
+            </button>
+            {results.customCars && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.customCars.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.customCars.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.customCars.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Fleet Treasury Section */}
+        <div className="cyber-card cyber-card-glow-amber rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-amber-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM FLEET TREASURY (+59M / +14.6K)</h3>
+                  <p className="text-[10px] font-chakra text-amber-300/80">Full Profile Bank · Level 50 EXP (96K)</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase">
+                MAX TIER
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Injects the full custom bank vault directly: +59,664,340 Soft Cash, +14,679 Gold, and instantly synchronizes driver level to Level 50.
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Soft Cash:</span>
+                <span className="text-emerald-400 font-bold">+59,664,340</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Gold Coins:</span>
+                <span className="text-amber-400 font-bold">+14,679</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Driver EXP:</span>
+                <span className="text-purple-400 font-bold">96,030 (Lv. 50)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomTreasury}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-500 hover:from-amber-500 hover:to-yellow-500 text-black font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> INJECTING TREASURY...</span>
+              ) : "💰 INJECT 59M CASH, 14K GOLD & LV. 50"}
+            </button>
+            {results.inject_custom_treasury && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_treasury.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_treasury.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_treasury.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Real Estate Portfolio Section */}
+        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                  <Bookmark className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
+                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+                52 HOUSES
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 52 luxury apartments across Midtown, Mountain, Speedway, and Industrial with 100% purchased status and active garage slots.
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Midtown Apartments:</span>
+                <span className="text-blue-400 font-bold">12 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Mountain Villas:</span>
+                <span className="text-blue-400 font-bold">19 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Speedway & Suburb:</span>
+                <span className="text-blue-400 font-bold">15 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Industrial Condos:</span>
+                <span className="text-blue-400 font-bold">6 Properties</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomRealEstate}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(59,130,246,0.25)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ESTATES...</span>
+              ) : "🏠 UNLOCK ALL 52 REAL ESTATES & SLOTS"}
+            </button>
+            {results.inject_custom_real_estate && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_real_estate.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_real_estate.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_real_estate.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Vanity & Battle Pass Vault Section */}
+        <div className="cyber-card cyber-card-glow-purple rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-fuchsia-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/30 flex items-center justify-center">
+                  <Trophy className="w-4 h-4 text-fuchsia-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM VANITY VAULT (115+ REWARDS)</h3>
+                  <p className="text-[10px] font-chakra text-fuchsia-300/80">Lunar, Halloween & Championship Plates · 1-18 Avatars</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/40 font-bold uppercase">
+                115+ ITEMS
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 115+ event numberplates, special festival liveries, tire sidewall lettering, and complete Avatars, Banners, and Frames 1-18.
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Special Plates:</span>
+                <span className="text-fuchsia-400 font-bold">Lunar Gold, Halloween, Oni, etc.</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Vanity Sets:</span>
+                <span className="text-fuchsia-400 font-bold">Avatars 1-18, Banners & Frames</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Tires & Emojis:</span>
+                <span className="text-fuchsia-400 font-bold">Sidewall 9 & StreetPass Emojis</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomVanity}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-fuchsia-500 hover:from-fuchsia-500 hover:to-pink-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(217,70,239,0.25)] hover:shadow-[0_0_30px_rgba(217,70,239,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING VANITY...</span>
+              ) : "🎖️ UNLOCK ALL 115+ VANITY ITEMS"}
+            </button>
+            {results.inject_custom_vanity && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_vanity.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_vanity.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_vanity.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Tuning Armory & Tires Section */}
+        <div className="cyber-card cyber-card-glow-orange rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-orange-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center">
+                  <Wrench className="w-4 h-4 text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM ARMORY (99x TIRES & PRO NODES)</h3>
+                  <p className="text-[10px] font-chakra text-orange-300/80">99x Sets 1-4 Tires · 29+ T5 Engine/Trans/Suspension Parts</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/40 font-bold uppercase">
+                PRO STOCK
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Refills your account inventory with 99x of each tire tier (Stock, Sets 1-4) plus 29+ top-tier engine blocks, gearboxes, ECUs, and aero parts.
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Tire Sets:</span>
+                <span className="text-orange-400 font-bold">99x Stock, Set 1, 2, 3, 4</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Tuning Parts:</span>
+                <span className="text-orange-400 font-bold">29 Pro Parts (ECU 6, Block 4, etc.)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomArmory}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-600 via-amber-600 to-orange-500 hover:from-orange-500 hover:to-amber-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(249,115,22,0.25)] hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> STOCKING ARMORY...</span>
+              ) : "🔧 STOCK 99x TIRES & 29+ PRO TUNING PARTS"}
+            </button>
+            {results.inject_custom_armory && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_armory.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_armory.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_armory.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Custom Racing Clubs Syndicate Section */}
+        <div className="cyber-card cyber-card-glow-teal rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-teal-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-teal-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM CLUBS SYNDICATE (20 CLUBS)</h3>
+                  <p className="text-[10px] font-chakra text-teal-300/80">20 Racing Clubs · Elite Boss Defeats & Records</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/40 font-bold uppercase">
+                20 CLUBS
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks complete membership and boss challenge progress for all 20 street clubs (Burnout Rangers, Spitfire, Emeralds, White Tigers, etc.).
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Tier 1-3 Clubs:</span>
+                <span className="text-teal-400 font-bold">White Tigers, Pythons, Spitfire</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Tier 4-5 Clubs:</span>
+                <span className="text-teal-400 font-bold">Burnout Rangers, Black Lotus, Emeralds</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomClubs}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-500 hover:from-teal-500 hover:to-emerald-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(20,184,166,0.25)] hover:shadow-[0_0_30px_rgba(20,184,166,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING CLUBS...</span>
+              ) : "🏆 UNLOCK ALL 20 RACING CLUBS"}
+            </button>
+            {results.inject_custom_clubs && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_clubs.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_clubs.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_clubs.msg}
               </div>
             )}
           </div>

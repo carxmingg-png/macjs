@@ -74,6 +74,7 @@ export function setUnauthorizedHandler(_fn: any) {}
 export function getListKeysQueryKey() { return ["/api/admin/keys"]; }
 export function getGetStringsQueryKey() { return ["/api/admin/strings"]; }
 export function getGetCarsQueryKey() { return ["/api/cars"]; }
+export function getGetCustomCarsQueryKey() { return ["/api/cars/custom"]; }
 
 export function useVerifyKey(options?: any) {
   return useMutation({
@@ -223,6 +224,14 @@ export function useGetCars(params?: any, options?: any) {
   return useQuery({
     queryKey: getGetCarsQueryKey(),
     queryFn: () => fetchApi("/api/cars"),
+    ...(options?.query || {}),
+  });
+}
+
+export function useGetCustomCars(params?: any, options?: any) {
+  return useQuery({
+    queryKey: getGetCustomCarsQueryKey(),
+    queryFn: () => fetchApi("/api/cars/custom"),
     ...(options?.query || {}),
   });
 }
