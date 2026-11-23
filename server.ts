@@ -1301,6 +1301,7 @@ export function injectEverythingOverdrive(profile: any): any {
   profile = injectFleetOverclock(profile);
   profile = injectLeaderboardAchievements(profile);
   profile = injectQuestsComplete(profile);
+  profile = unlockMapsUltimate(profile);
   profile = injectSafeCurrency(profile, 50000, 5000);
   return profile;
 }
@@ -1339,11 +1340,7 @@ export function unlockMapOneByOne(profile: any, mapName?: string): { profile: an
 }
 
 export function unlockAllMaps(profile: any): any {
-  profile.game_world_parts = profile.game_world_parts || {};
-  ALL_MAPS.forEach(m => {
-    profile.game_world_parts[m] = { unlocked: true };
-  });
-  return profile;
+  return unlockMapsUltimate(profile);
 }
 
 // ── Exact Bot.py Map & Real Estate Unlock Logic ─────────────────────────────
@@ -5816,7 +5813,7 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
         modified = modifyProfile(profile, { get_all_cars: true, unlock_clubs: true, unlock_profile_style: true }, userId);
         modified = unlockAllMaps(modified);
         modified = injectSafeCurrency(modified, 50000, 5000);
-        successMsg = "✅ Successfully injected Everything (Normal Tier): 98 Cars, All 6 World Maps, 20 Racing Clubs, Profile Style, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)! Safe from bans.";
+        successMsg = "✅ Successfully injected Everything (Normal Tier): 98 Cars, All 6 Maps & 52 Real Estate Properties, 20 Racing Clubs, Profile Style, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)! Safe from bans.";
       } else if (service_type === "inject_everything_special") {
         modified = modifyProfile(profile, { inject_custom_fleet: true }, userId);
         modified = unlockAllMaps(modified);
@@ -5824,7 +5821,7 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
         modified = injectCustomArmory(modified);
         modified = injectCustomClubs(modified);
         modified = injectSafeCurrency(modified, 50000, 5000);
-        successMsg = "✅ Successfully injected Everything (Special Tier): 117 Custom Cars, All 6 World Maps, 115+ Vanity Vault, 99x Tires & Armory, 20 Clubs, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
+        successMsg = "✅ Successfully injected Everything (Special Tier): 117 Custom Cars, All 6 Maps & 52 Real Estate Properties, 115+ Vanity Vault, 99x Tires & Armory, 20 Clubs, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
       } else if (service_type === "inject_everything_extreme") {
         modified = modifyProfile(profile, { inject_extreme_fleet: true }, userId);
         modified = unlockAllMaps(modified);
@@ -5834,7 +5831,7 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
         modified = injectExtremeClubs(modified);
         modified = injectExtremeCollectables(modified);
         modified = injectSafeCurrency(modified, 50000, 5000);
-        successMsg = "✅ Successfully injected Everything (Extreme Tier): 117 Pro-Tuned Cars (Stage-5/Swaps), All 6 World Maps, 90 Shop Packs, 128 Vanity Rewards, 99x Tires, 29 Tuning Parts, 20 Clubs, Event Collectables & Emojis, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
+        successMsg = "✅ Successfully injected Everything (Extreme Tier): 117 Pro-Tuned Cars (Stage-5/Swaps), All 6 Maps & 52 Real Estate Properties, 90 Shop Packs, 128 Vanity Rewards, 99x Tires, 29 Tuning Parts, 20 Clubs, Event Collectables & Emojis, +50,000 Cash, +5,000 Gold, Lv. 50 (93,060 EXP)!";
       } else if (service_type === "inject_extreme_fleet") {
         const count = random_cars_count ? parseInt(random_cars_count, 10) : undefined;
         const initialCount = Object.keys(profile.cars?.items || {}).length;

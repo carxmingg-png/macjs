@@ -2547,17 +2547,17 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   <Map className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -2567,10 +2567,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
                 </div>
               </div>
-              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
-                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
-                  100% Open
+              <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-base font-black text-purple-300 font-mono mt-0.5">
+                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
                 </div>
               </div>
             </div>
@@ -2578,14 +2578,15 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
 
           <div className="space-y-2 pt-2 border-t border-zinc-800/80">
             <button
-              data-testid="button-unlock-maps"
+              data-testid="button-unlock-maps-houses"
               onClick={() => unlockMapsHouses.mutate({
                 data: {
                   token: session.token,
                   userId: session.carxId,
                   deviceId: session.deviceId,
                   uniqueId: session.uniqueId,
-                  service_type: "unlock_maps",
+                  service_type: "unlock_maps_houses",
+                  unlock_houses: true,
                   unlock_maps: true,
                   userToken
                 }
@@ -2595,10 +2596,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -3063,17 +3064,17 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   <Map className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -3083,10 +3084,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
                 </div>
               </div>
-              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
-                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
-                  100% Open
+              <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-base font-black text-purple-300 font-mono mt-0.5">
+                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
                 </div>
               </div>
             </div>
@@ -3094,14 +3095,15 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
 
           <div className="space-y-2 pt-2 border-t border-zinc-800/80">
             <button
-              data-testid="button-unlock-maps"
+              data-testid="button-unlock-maps-houses"
               onClick={() => unlockMapsHouses.mutate({
                 data: {
                   token: session.token,
                   userId: session.carxId,
                   deviceId: session.deviceId,
                   uniqueId: session.uniqueId,
-                  service_type: "unlock_maps",
+                  service_type: "unlock_maps_houses",
+                  unlock_houses: true,
                   unlock_maps: true,
                   userToken
                 }
@@ -3111,10 +3113,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -3481,17 +3483,17 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   <Map className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -3501,10 +3503,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
                 </div>
               </div>
-              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
-                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
-                  100% Open
+              <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-base font-black text-purple-300 font-mono mt-0.5">
+                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
                 </div>
               </div>
             </div>
@@ -3512,14 +3514,15 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
 
           <div className="space-y-2 pt-2 border-t border-zinc-800/80">
             <button
-              data-testid="button-unlock-maps"
+              data-testid="button-unlock-maps-houses"
               onClick={() => unlockMapsHouses.mutate({
                 data: {
                   token: session.token,
                   userId: session.carxId,
                   deviceId: session.deviceId,
                   uniqueId: session.uniqueId,
-                  service_type: "unlock_maps",
+                  service_type: "unlock_maps_houses",
+                  unlock_houses: true,
                   unlock_maps: true,
                   userToken
                 }
@@ -3529,10 +3532,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
@@ -3978,17 +3981,17 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   <Map className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP DISTRICTS (6 ZONES)</h3>
-                  <p className="text-[10px] font-chakra text-cyan-300/80">Mountain · Sunset · Port · Suburb · Midtown</p>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">WORLD MAP & REAL ESTATE</h3>
+                  <p className="text-[10px] font-chakra text-cyan-300/80">6 Zones · 52 Garages · Race Hubs</p>
                 </div>
               </div>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold uppercase">
-                {profile ? `${profile.maps_count ?? 0}/6 Unlocked` : "6 Zones"}
+                {profile ? `${profile.maps_count ?? 0}/6 Maps · ${profile.real_estates_count ?? 0}/52 Houses` : "6 Zones · 52 Garages"}
               </span>
             </div>
 
             <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
-              Unlocks all 6 major CarX Street world map zones without touching real estate: Mountain, Sunset, Port, Industrial, Suburb & Midtown.
+              Unlocks all 6 World Map zones (Mountain, Sunset, Port, Industrial, Suburb & Midtown) plus all 52 player houses & 156 garage slots, car markets, showrooms, and farm race generators.
             </p>
 
             <div className="grid grid-cols-2 gap-2 py-1">
@@ -3998,10 +4001,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
                   {profile ? `${profile.maps_count ?? 0} / 6 Active` : "6 Zones"}
                 </div>
               </div>
-              <div className="bg-black/60 border border-teal-500/30 rounded-xl p-3 text-center">
-                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Free Roam</div>
-                <div className="text-base font-black text-teal-300 font-mono mt-0.5">
-                  100% Open
+              <div className="bg-black/60 border border-purple-500/30 rounded-xl p-3 text-center">
+                <div className="text-[10px] font-chakra font-bold text-zinc-400 uppercase tracking-wider">Real Estates</div>
+                <div className="text-base font-black text-purple-300 font-mono mt-0.5">
+                  {profile ? `${profile.real_estates_count ?? 0} / 52 Houses` : "52 Garages"}
                 </div>
               </div>
             </div>
@@ -4009,14 +4012,15 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
 
           <div className="space-y-2 pt-2 border-t border-zinc-800/80">
             <button
-              data-testid="button-unlock-maps"
+              data-testid="button-unlock-maps-houses"
               onClick={() => unlockMapsHouses.mutate({
                 data: {
                   token: session.token,
                   userId: session.carxId,
                   deviceId: session.deviceId,
                   uniqueId: session.uniqueId,
-                  service_type: "unlock_maps",
+                  service_type: "unlock_maps_houses",
+                  unlock_houses: true,
                   unlock_maps: true,
                   userToken
                 }
@@ -4026,10 +4030,10 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
             >
               {unlockMapsHouses.isPending ? (
                 <span className="flex items-center justify-center gap-1.5">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ALL 6 MAPS...
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING MAPS & REAL ESTATES...
                 </span>
               ) : (
-                "🗺️ UNLOCK ALL 6 WORLD MAPS (1-CLICK)"
+                "🗺️ UNLOCK ALL MAPS & REAL ESTATE (1-CLICK)"
               )}
             </button>
             {results.mapsHouses && (
