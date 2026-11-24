@@ -2618,19 +2618,25 @@ class CarXClient {
       }
     };
 
-    const urls: string[] = [`${GAME_BASE_URL}/profiles`];
+    // Pacing delay (1.2s) between get and upload so CarX server version-lock has expired
+    await new Promise(r => setTimeout(r, 1200));
+
+    // Try primary profiles URL first sequentially
+    const res1 = await tryUpload(`${GAME_BASE_URL}/profiles`);
+    if (res1 && res1.success) return res1;
+
+    // Fallback to numeric user URL if available
     if (userId) {
       const cleanUser = typeof userId === "string" ? userId.trim() : String(userId);
       const numericId = cleanUser.replace(/\D/g, "");
       if (numericId && numericId.length >= 6) {
-        urls.push(`${GAME_BASE_URL}/profiles/${numericId}`);
+        await new Promise(r => setTimeout(r, 1000));
+        const res2 = await tryUpload(`${GAME_BASE_URL}/profiles/${numericId}`);
+        if (res2 && res2.success) return res2;
       }
     }
 
-    const results = await Promise.all(urls.map(url => tryUpload(url).catch(() => null)));
-    const firstSuccess = results.find(r => r && r.success);
-    if (firstSuccess) return firstSuccess;
-    return results.find(r => r !== null) || { success: false, response: null, message: "Save upload failed." };
+    return res1 || { success: false, response: null, message: "Save upload failed." };
   }
 
   static async botRegisterDevice(deviceId: string) {
@@ -5307,36 +5313,37 @@ async function executePythonMapUnlock(rawToken: string): Promise<{ success: bool
   const token = rawToken.startsWith("Bearer ") ? rawToken.slice(7).trim() : rawToken.trim();
   const pyScript = path.join(process.cwd(), "bot_map_unlock.py");
 
-  // Attempt 1: Execute bot_map_unlock.py directly with Python
-  const pyPromise = new Promise<{ success: boolean; message: string; profile?: any; stats?: any }>((resolve) => {
-    execFile("python", [pyScript, token], { maxBuffer: 50 * 1024 * 1024, timeout: 65000 }, (error, stdout, stderr) => {
-      if (error) {
-        console.warn("[PYTHON MAP RUNNER ERROR]", stderr || error.message);
-        return resolve({ success: false, message: stderr || error.message });
-      }
-      try {
-        const out = stdout.trim();
-        const lastJsonLine = out.split("\n").filter(l => l.trim().startsWith("{")).pop();
-        if (lastJsonLine) {
-          const parsed = JSON.parse(lastJsonLine);
-          return resolve(parsed);
+  // Attempt 1: Execute bot_map_unlock.py directly with Python (try python3, then python)
+  const runPy = (cmd: string): Promise<{ success: boolean; message: string; profile?: any; stats?: any }> => {
+    return new Promise((resolve) => {
+      execFile(cmd, [pyScript, token], { maxBuffer: 50 * 1024 * 1024, timeout: 65000 }, (error, stdout, stderr) => {
+        if (error) {
+          return resolve({ success: false, message: stderr || error.message });
         }
-        const parsed = JSON.parse(out);
-        return resolve(parsed);
-      } catch (err: any) {
-        console.warn("[PYTHON MAP RUNNER PARSE ERROR]", stdout);
-        return resolve({ success: false, message: stdout || err.message });
-      }
+        try {
+          const out = stdout.trim();
+          const lastJsonLine = out.split("\n").filter(l => l.trim().startsWith("{")).pop();
+          if (lastJsonLine) {
+            return resolve(JSON.parse(lastJsonLine));
+          }
+          return resolve(JSON.parse(out));
+        } catch (err: any) {
+          return resolve({ success: false, message: stdout || err.message });
+        }
+      });
     });
-  });
+  };
 
-  const res = await pyPromise;
+  let res = await runPy("python3");
+  if (!res || !res.success) {
+    res = await runPy("python");
+  }
   if (res && res.success) {
     return res;
   }
 
-  // Attempt 2: Exact 1:1 replica of python bot logic in Node (no extra headers, no sanitizers)
-  console.log("[MAP INJECT] Python runner failed or returned false, executing direct 1:1 replica fallback...");
+  // Attempt 2: Exact 1:1 replica of python bot logic in Node with 2s pacing delay
+  console.log("[MAP INJECT] Python runner fallback: executing direct 1:1 replica with pacing delay...");
   try {
     const userAgent = "UnityPlayer/6000.0.64f1 (UnityWebRequest/1.0, libcurl/8.10.1-DEV)";
     const profileUrl = "https://street-prod.carx-online.com/str/v1/client/profiles";
@@ -5366,6 +5373,9 @@ async function executePythonMapUnlock(rawToken: string): Promise<{ success: bool
     let profile = JSON.parse(decompressedJson);
 
     profile = unlockMapsUltimate(profile);
+
+    // Pacing delay (2 seconds) so CarX server doesn't flag rapid sequential writes
+    await new Promise(r => setTimeout(r, 2000));
 
     const rawOut = Buffer.from(JSON.stringify(profile), "utf-8");
     const gz = zlib.gzipSync(rawOut);
@@ -5412,52 +5422,7 @@ async function executePythonMapUnlock(rawToken: string): Promise<{ success: bool
 // ── Core Map Unlock Pipeline (Python runner + bulletproof CarXClient fallback) ──
 export async function handleMapUnlockCore(token: string, userId?: string, deviceId?: string, uniqueId?: string): Promise<{ success: boolean; message: string; profile?: any; stats?: any }> {
   console.log(`[MAP INJECT] Starting map unlock for token...`);
-  try {
-    const pyResult = await executePythonMapUnlock(token);
-    if (pyResult && pyResult.success) {
-      console.log(`[MAP INJECT] Python bot runner succeeded!`);
-      return pyResult;
-    }
-  } catch (err: any) {
-    console.warn(`[MAP INJECT] Python runner notice:`, err?.message || err);
-  }
-
-  console.log(`[MAP INJECT] Running verified CarXClient pipeline for map unlock...`);
-  try {
-    const download = await CarXClient.getProfile(token, deviceId, uniqueId);
-    if (!download.success || !download.profile) {
-      return { success: false, message: download.message || "Failed to download profile from CarX server." };
-    }
-
-    let profile = download.profile;
-    profile = unlockMapsUltimate(profile);
-    profile = injectCustomRealEstate(profile);
-
-    const upload = await CarXClient.uploadProfile(
-      token,
-      profile,
-      userId,
-      download.response,
-      download.isWrappedInD,
-      download.isWrappedInData,
-      deviceId,
-      uniqueId
-    );
-
-    if (upload.success) {
-      return {
-        success: true,
-        message: "✅ Done. Maps and Houses successfully unlocked!",
-        profile,
-        stats: extractProfileStats(profile, false)
-      };
-    } else {
-      return { success: false, message: upload.message || "Failed to upload unlocked maps to CarX server." };
-    }
-  } catch (e: any) {
-    console.error(`[MAP INJECT] Error in CarXClient pipeline:`, e?.message || e);
-    return { success: false, message: e?.message || "Internal error during map unlock." };
-  }
+  return await executePythonMapUnlock(token);
 }
 
 // ── Core Clubs Unlock Pipeline ─────────────────────────────────────────────
@@ -5809,7 +5774,8 @@ app.post(["/api/carx/inject", "/carx/inject"], authMiddleware, async (req, res) 
       "unlock_map",
       "inject_map",
       "menu_maps",
-      "unlock_houses"
+      "unlock_houses",
+      "inject_custom_real_estate"
     ].includes(service_type);
 
     if (isMapService) {

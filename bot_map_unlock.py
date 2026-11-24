@@ -39,7 +39,6 @@ def unlock_maps_ultimate(profile):
     for m in ['industrial', 'midtown', 'suburb', 'port', 'mountain', 'sunset']:
         profile['game_world_parts'][m] = {"unlocked": True}
     real_estates, real_estate_slots = create_slot_data()
-    owned_cars = set(profile.get('cars', {}).get('items', {}).keys()) if isinstance(profile.get('cars', {}), dict) and isinstance(profile.get('cars', {}).get('items'), dict) else set()
     if 'real_estates' not in profile:
         profile['real_estates'] = {}
     for prop_id, prop_data in real_estates.items():
@@ -53,12 +52,8 @@ def unlock_maps_ultimate(profile):
             else:
                 for slot in existing['slots']:
                     slot['unlocked'] = True
-                    cid = str(slot.get('car_id', ''))
-                    if not cid or cid not in owned_cars:
+                    if 'car_id' not in slot:
                         slot['car_id'] = ""
-                        slot['is_empty'] = True
-                    else:
-                        slot['is_empty'] = False
     if 'real_estate_slots' not in profile:
         profile['real_estate_slots'] = {}
     for slot_id, slot_data in real_estate_slots.items():
@@ -66,8 +61,7 @@ def unlock_maps_ultimate(profile):
             profile['real_estate_slots'][slot_id] = slot_data
         else:
             profile['real_estate_slots'][slot_id]['unlocked'] = True
-            cid = str(profile['real_estate_slots'][slot_id].get('car_id', ''))
-            if not cid or cid not in owned_cars:
+            if 'car_id' not in profile['real_estate_slots'][slot_id]:
                 profile['real_estate_slots'][slot_id]['car_id'] = ""
     if 'locations' not in profile:
         profile['locations'] = {}
@@ -112,13 +106,8 @@ def get_profile(token):
     try:
         r = requests.get(PROFILE_URL, headers=headers, timeout=TIMEOUT)
         if r.status_code == 200:
-            json_data = r.json()
-            data = json_data.get('d', {}).get('data') if isinstance(json_data.get('d'), dict) else json_data.get('data')
-            if not data or not isinstance(data, dict):
-                data = json_data
-            compressed = data.get('compressed_data')
-            if not compressed:
-                return None, "No compressed_data"
+            data = r.json()['d']['data']
+            compressed = data['compressed_data']
             raw = base64.b64decode(compressed)
             return json.loads(gzip.decompress(raw[4:])), None
         return None, f"HTTP {r.status_code}"
@@ -131,16 +120,8 @@ def save_profile(token, profile, retries=5):
             b64 = compress_data(profile)
             headers = {'User-Agent': USER_AGENT, 'Accept': 'application/json', 'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'}
             r = requests.post(PROFILE_URL, json={'compressed_data': b64}, headers=headers, timeout=TIMEOUT)
-            if r.status_code in (200, 201, 204):
+            if r.status_code == 200:
                 return True, None
-            # Also try numeric user id if available in profile
-            account_id = profile.get('account_id') or profile.get('id') or profile.get('user_id')
-            if account_id:
-                clean_id = ''.join(c for c in str(account_id) if c.isdigit())
-                if clean_id:
-                    r2 = requests.post(f"{PROFILE_URL}/{clean_id}", json={'compressed_data': b64}, headers=headers, timeout=TIMEOUT)
-                    if r2.status_code in (200, 201, 204):
-                        return True, None
             time.sleep(2)
         except Exception:
             time.sleep(2)

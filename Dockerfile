@@ -20,6 +20,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=10000
 
+RUN apk add --no-cache python3 py3-requests
+
 COPY package*.json ./
 RUN npm install --omit=dev
 
