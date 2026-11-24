@@ -7,6 +7,7 @@ COPY public ./public
 COPY src ./src
 COPY *.ts ./
 COPY *.json ./
+COPY *.py ./
 COPY keys* ./
 
 RUN npm install
@@ -25,6 +26,7 @@ RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.json ./
 COPY --from=builder /app/*.ts ./
+COPY --from=builder /app/*.py ./
 COPY --from=builder /app/keys* ./
 
 EXPOSE 10000
