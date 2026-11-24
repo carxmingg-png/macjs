@@ -2611,6 +2611,67 @@ function InjectionPanel({ session, userToken, onDisconnect }: { session: CarXSes
           </div>
         </div>
 
+        {/* Custom Real Estate Portfolio Section */}
+        <div className="cyber-card cyber-card-glow-blue rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-blue-500/30">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center">
+                  <Bookmark className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-gaming font-bold text-white tracking-wider uppercase">CUSTOM REAL ESTATE PORTFOLIO (52 ESTATES)</h3>
+                  <p className="text-[10px] font-chakra text-blue-300/80">52 Estates · All Garages & Slots Unlocked</p>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold uppercase">
+                52 HOUSES
+              </span>
+            </div>
+
+            <p className="text-xs font-chakra text-zinc-400 leading-relaxed">
+              Unlocks all 52 luxury apartments across Midtown, Mountain, Speedway, and Industrial with 100% purchased status and active garage slots.
+            </p>
+
+            <div className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-1.5 font-mono text-[11px]">
+              <div className="flex justify-between text-zinc-400">
+                <span>Midtown Apartments:</span>
+                <span className="text-blue-400 font-bold">12 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Mountain Villas:</span>
+                <span className="text-blue-400 font-bold">19 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Speedway & Suburb:</span>
+                <span className="text-blue-400 font-bold">15 Properties</span>
+              </div>
+              <div className="flex justify-between text-zinc-400">
+                <span>Industrial Condos:</span>
+                <span className="text-blue-400 font-bold">6 Properties</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80">
+            <button
+              onClick={handleInjectCustomRealEstate}
+              disabled={anyPending}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-gaming font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40 shadow-[0_0_20px_rgba(59,130,246,0.25)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] cursor-pointer"
+            >
+              {injectCustomPerk.isPending ? (
+                <span className="flex items-center justify-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> UNLOCKING ESTATES...</span>
+              ) : "🏠 UNLOCK ALL 52 REAL ESTATES & SLOTS"}
+            </button>
+            {results.inject_custom_real_estate && (
+              <div className={`flex items-center gap-1.5 text-xs font-mono ${results.inject_custom_real_estate.ok ? "text-emerald-400" : "text-red-400"}`}>
+                {results.inject_custom_real_estate.ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {results.inject_custom_real_estate.msg}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Vehicles Injection */}
         <div className="cyber-card cyber-card-glow-purple rounded-3xl p-5 space-y-4 flex flex-col justify-between border border-purple-500/30">
           <div className="space-y-3.5">

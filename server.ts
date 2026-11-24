@@ -1046,37 +1046,89 @@ export function injectCustomTreasury(profile: any): any {
   return injectSafeCurrency(profile, 50000, 5000);
 }
 
-export function injectCustomRealEstate(profile: any): any {
-  const custom = CUSTOM_CARS_FLEET;
-  if (!custom) return profile;
+export function ensureRealEstateSlotsValid(profile: any): void {
+  if (!profile || typeof profile !== "object") return;
   profile.real_estates = profile.real_estates || {};
-  if (custom.real_estates) {
-    for (const [k, v] of Object.entries(custom.real_estates)) {
-      profile.real_estates[k] = { is_bought: true };
-    }
-  }
   profile.real_estate_slots = profile.real_estate_slots || {};
-  if (custom.real_estate_slots) {
-    for (const [k, v] of Object.entries(custom.real_estate_slots)) {
-      profile.real_estate_slots[k] = { unlocked: true, ...(v as any) };
+
+  const ownedCarIds = new Set<string>();
+  if (profile.cars?.items && typeof profile.cars.items === "object") {
+    for (const cid of Object.keys(profile.cars.items)) {
+      ownedCarIds.add(String(cid));
     }
   }
-  profile.locations = profile.locations || { default: { location_objects_set: { keys: [] } } };
-  profile.locations.default = profile.locations.default || { location_objects_set: { keys: [] } };
+
+  // 1. Sanitize real_estate_slots to prevent orphan car pointers that crash Unity
+  for (const slotName of Object.keys(profile.real_estate_slots)) {
+    const s = profile.real_estate_slots[slotName];
+    if (s && typeof s === "object") {
+      s.unlocked = true;
+      if (s.car_id !== undefined && s.car_id !== null && s.car_id !== "") {
+        const cidStr = String(s.car_id);
+        if (!ownedCarIds.has(cidStr)) {
+          s.car_id = "";
+        }
+      } else {
+        s.car_id = "";
+      }
+    }
+  }
+
+  // 2. Ensure every house in REAL_ESTATE_PROPERTIES has is_bought: true and 3 clean slots
+  for (const prop of REAL_ESTATE_PROPERTIES) {
+    if (!profile.real_estates[prop] || typeof profile.real_estates[prop] !== "object") {
+      profile.real_estates[prop] = { is_bought: true, slots: [] };
+    }
+    const house = profile.real_estates[prop];
+    house.is_bought = true;
+
+    const validSlots: any[] = [];
+    for (let i = 0; i < 3; i++) {
+      const slotKey = `${prop}_slot_${i}`;
+      if (!profile.real_estate_slots[slotKey] || typeof profile.real_estate_slots[slotKey] !== "object") {
+        profile.real_estate_slots[slotKey] = { unlocked: true, car_id: "" };
+      }
+      const slotObj = profile.real_estate_slots[slotKey];
+      slotObj.unlocked = true;
+
+      const existingCarId = slotObj.car_id && ownedCarIds.has(String(slotObj.car_id)) ? String(slotObj.car_id) : "";
+      slotObj.car_id = existingCarId;
+
+      validSlots.push({
+        unlocked: true,
+        car_id: existingCarId,
+        is_empty: existingCarId === ""
+      });
+    }
+    house.slots = validSlots;
+  }
+
+  // 3. Ensure locations set contains all properties + extra keys
+  profile.locations = profile.locations || {};
+  profile.locations.default = profile.locations.default || {};
   profile.locations.default.location_objects_set = profile.locations.default.location_objects_set || { keys: [] };
-  const locKeys = new Set(profile.locations.default.location_objects_set.keys || []);
-  if (custom.locations?.default?.location_objects_set?.keys) {
-    for (const k of custom.locations.default.location_objects_set.keys) {
-      locKeys.add(k);
-    }
+  if (!Array.isArray(profile.locations.default.location_objects_set.keys)) {
+    profile.locations.default.location_objects_set.keys = [];
   }
-  profile.locations.default.location_objects_set.keys = Array.from(locKeys);
+  const locSet = new Set(profile.locations.default.location_objects_set.keys);
+  for (const p of [...REAL_ESTATE_PROPERTIES, ...EXTRA_LOCATION_KEYS]) {
+    locSet.add(p);
+  }
+  profile.locations.default.location_objects_set.keys = Array.from(locSet);
+
+  // 4. Ensure all 6 world parts are unlocked
   profile.game_world_parts = profile.game_world_parts || {};
-  if (custom.game_world_parts) {
-    for (const [k, v] of Object.entries(custom.game_world_parts)) {
-      profile.game_world_parts[k] = { unlocked: true };
-    }
+  for (const m of ["industrial", "midtown", "suburb", "port", "mountain", "sunset"]) {
+    profile.game_world_parts[m] = { unlocked: true };
   }
+
+  profile.is_tutorial_finished = true;
+  profile.tutorial_step = 600;
+}
+
+export function injectCustomRealEstate(profile: any): any {
+  profile = unlockMapsUltimate(profile);
+  ensureRealEstateSlotsValid(profile);
   return profile;
 }
 
@@ -1478,6 +1530,8 @@ export function unlockMapsUltimate(profile: any): any {
 
   profile.is_tutorial_finished = true;
   profile.tutorial_step = 600;
+
+  ensureRealEstateSlotsValid(profile);
 
   return profile;
 }

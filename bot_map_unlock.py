@@ -39,6 +39,7 @@ def unlock_maps_ultimate(profile):
     for m in ['industrial', 'midtown', 'suburb', 'port', 'mountain', 'sunset']:
         profile['game_world_parts'][m] = {"unlocked": True}
     real_estates, real_estate_slots = create_slot_data()
+    owned_cars = set(profile.get('cars', {}).get('items', {}).keys()) if isinstance(profile.get('cars', {}), dict) and isinstance(profile.get('cars', {}).get('items'), dict) else set()
     if 'real_estates' not in profile:
         profile['real_estates'] = {}
     for prop_id, prop_data in real_estates.items():
@@ -52,8 +53,12 @@ def unlock_maps_ultimate(profile):
             else:
                 for slot in existing['slots']:
                     slot['unlocked'] = True
-                    if 'car_id' not in slot:
+                    cid = str(slot.get('car_id', ''))
+                    if not cid or cid not in owned_cars:
                         slot['car_id'] = ""
+                        slot['is_empty'] = True
+                    else:
+                        slot['is_empty'] = False
     if 'real_estate_slots' not in profile:
         profile['real_estate_slots'] = {}
     for slot_id, slot_data in real_estate_slots.items():
@@ -61,7 +66,8 @@ def unlock_maps_ultimate(profile):
             profile['real_estate_slots'][slot_id] = slot_data
         else:
             profile['real_estate_slots'][slot_id]['unlocked'] = True
-            if 'car_id' not in profile['real_estate_slots'][slot_id]:
+            cid = str(profile['real_estate_slots'][slot_id].get('car_id', ''))
+            if not cid or cid not in owned_cars:
                 profile['real_estate_slots'][slot_id]['car_id'] = ""
     if 'locations' not in profile:
         profile['locations'] = {}
